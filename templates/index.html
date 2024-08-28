@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatbot de Currículo</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Evita barras de rolagem desnecessárias */
+            position: relative;
+            text-align: center; /* Centraliza o título */
+        }
+
+        /* Estilo para o fundo com GIF */
+        .background-gif {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://forum.affinity.serif.com/uploads/monthly_2022_03/matrix.gif.b71b28882682073a8d38210e526655b8.gif'); /* Substitua pelo caminho do seu GIF */
+            background-size: cover;
+            background-position: center;
+            opacity: 0.2; /* Ajuste a opacidade do GIF para deixá-lo mais claro */
+            pointer-events: none; /* Faz com que o fundo não interfira na interação com o chat */
+        }
+
+        h1 {
+            margin: 0;
+            padding: 20px;
+            font-size: 24px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7); /* Fundo para destacar o título */
+            border-radius: 8px;
+            position: absolute; /* Fica fixo no topo da página */
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px); /* Margem das laterais */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
+        }
+
+        #chat {
+            width: 100%;
+            max-width: 600px;
+            margin: 80px auto 20px auto; /* Margem para o topo e o fundo do chat */
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            background-color: rgba(255, 255, 255, 0.1); /* Fundo transparente */
+        }
+
+        #messages {
+            max-height: 70vh; /* Permite que o chat ocupe até 70% da altura da viewport */
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #messages div {
+            margin-bottom: 15px;
+        }
+
+        .user-message {
+            color: #4CAF50;
+            background-color: rgba(76, 175, 80, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            margin-left: auto;
+        }
+
+        .bot-message {
+            color: #2196F3;
+            background-color: rgba(33, 150, 243, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            max-width: 80%;
+            margin-right: auto;
+        }
+
+        #input {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        #input textarea {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            resize: none;
+        }
+
+        #input button {
+            padding: 10px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background-color 0.3s;
+        }
+
+        #input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-gif"></div>
+    <h1>Assistente Virtual Julio Mendes</h1>
+    <div id="chat">
+        <div id="messages"></div>
+        <div id="input">
+            <textarea id="messageInput" rows="3" placeholder="Digite sua mensagem..."></textarea>
+            <button onclick="sendMessage()">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            if (!message.trim()) return; // Não enviar se o campo estiver vazio
+
+            // Adiciona a mensagem do usuário à tela
+            addMessage('Você', message, 'user-message');
+
+            // Envia a mensagem para o servidor
+            const response = await fetch('/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ message: message })
+            });
+
+            // Obtém a resposta do servidor
+            const data = await response.json();
+            const reply = data.reply;
+
+            // Adiciona a resposta do chatbot à tela
+            addMessage('Chatbot', reply, 'bot-message');
+
+            // Limpa o campo de entrada
+            messageInput.value = '';
+        }
+
+        function addMessage(sender, message, className) {
+            const messages = document.getElementById('messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = className;
+            messageDiv.innerHTML = `<strong>${sender}:</strong> <div>${marked.parse(message)}</div>`;
+            messages.appendChild(messageDiv);
+            messages.scrollTop = messages.scrollHeight; // Rolagem automática para a parte inferior
+        }
+
+        // Envio de mensagem ao pressionar Enter
+        document.getElementById('messageInput').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

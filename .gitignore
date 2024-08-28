@@ -1,0 +1,16 @@
+# Ignorar o arquivo .env
+.env
+
+# Ignorar diretórios e arquivos comuns
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.env
+instance/
+.venv/
+venv/
+env/
+ENV/
+.idea/
+.vscode/
